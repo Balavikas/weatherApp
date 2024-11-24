@@ -1,0 +1,25 @@
+<div class="input-group mb-3 w-50 mx-auto d-flex justify-content-center" style="padding-top: 90px;">
+  <%= form_with url: "/search", method: :get, class: "d-flex" do |form| %>
+    <input type="text" class="form-control" id="city" name="city" placeholder="Search for a city" aria-label="Search" aria-describedby="search-addon">
+    <button class="btn btn-primary" type="submit" id="search-addon">Search</button>
+  <% end %>
+</div>
+
+<% if @WeatherInfo.city.nil? %>
+  <div class="alert alert-danger">
+    <%= flash[:alert] %>
+  </div>
+<% else %>
+    <div class="d-flex justify-content-center align-items-center min-vh-100">
+        <div class="text-center p-4 border bg-light">
+            <h1> City: <%= @WeatherInfo.city %> </h1>
+            <h1> <%= Date.today.strftime("%A, %B %d") %> </h1>
+            <h1> Temperature: <%= @WeatherInfo.temperature %> Celsius </h1>
+            <%= image_tag(@WeatherInfo.icon, alt: "Weather Icon", height: "300", width: "300") %>
+            <h1> SKY: <%= @WeatherInfo.sky %> </h1>
+        </div>
+    </div>
+<% end %>
+
+
+<p> Sabbineni </P>
