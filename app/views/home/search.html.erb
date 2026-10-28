@@ -1,4 +1,7 @@
-<section class="results">
+<section class="results"
+         data-controller="idle-reset"
+         data-idle-reset-url-value="<%= root_path %>"
+         data-action="pointerdown@window->idle-reset#touch keydown@window->idle-reset#touch scroll@window->idle-reset#touch visibilitychange@document->idle-reset#check pageshow@window->idle-reset#check">
   <%= render "search_form", city: params[:city] %>
 
   <% if @weather.found? %>
