@@ -1,25 +1,40 @@
-<div class="input-group mb-3 w-50 mx-auto d-flex justify-content-center" style="padding-top: 90px;">
-  <%= form_with url: "/search", method: :get, class: "d-flex" do |form| %>
-    <input type="text" class="form-control" id="city" name="city" placeholder="Search for a city" aria-label="Search" aria-describedby="search-addon">
-    <button class="btn btn-primary" type="submit" id="search-addon">Search</button>
-  <% end %>
-</div>
+<section class="results">
+  <%= render "search_form", city: params[:city] %>
 
-<% if @WeatherInfo.city.nil? %>
-  <div class="alert alert-danger">
-    <%= flash[:alert] %>
-  </div>
-<% else %>
-    <div class="d-flex justify-content-center align-items-center min-vh-100">
-        <div class="text-center p-4 border bg-light">
-            <h1> City: <%= @WeatherInfo.city %> </h1>
-            <h1> <%= Date.today.strftime("%A, %B %d") %> </h1>
-            <h1> Temperature: <%= @WeatherInfo.temperature %> Celsius </h1>
-            <%= image_tag(@WeatherInfo.icon, alt: "Weather Icon", height: "300", width: "300") %>
-            <h1> SKY: <%= @WeatherInfo.sky %> </h1>
+  <% if @weather.found? %>
+    <article class="weather-card weather-card--<%= @weather.theme %>">
+      <header class="weather-card__header">
+        <div>
+          <h1 class="weather-card__city"><%= @weather.city %><% if @weather.country %><span class="weather-card__country"><%= @weather.country %></span><% end %></h1>
+          <p class="weather-card__date"><%= @weather.local_time.strftime("%A, %B %-d · %-I:%M %p") %> local time</p>
         </div>
-    </div>
-<% end %>
+      </header>
 
+      <div class="weather-card__main">
+        <div>
+          <p class="weather-card__temp"><%= @weather.temperature %><span>°C</span></p>
+          <p class="weather-card__sky"><%= @weather.sky %></p>
+          <p class="weather-card__range">
+            Feels like <%= @weather.feels_like %>° · H <%= @weather.temp_max %>° · L <%= @weather.temp_min %>°
+          </p>
+        </div>
+        <%= image_tag @weather.icon, alt: @weather.sky, class: "weather-card__icon", width: 160, height: 160 %>
+      </div>
 
-<p> Sabbineni </P>
+      <dl class="weather-card__stats">
+        <div><dt>Humidity</dt><dd><%= @weather.humidity %>%</dd></div>
+        <div><dt>Wind</dt><dd><%= @weather.wind_speed_kmh %> km/h</dd></div>
+        <div><dt>Pressure</dt><dd><%= @weather.pressure %> hPa</dd></div>
+        <% if @weather.visibility_km %>
+          <div><dt>Visibility</dt><dd><%= @weather.visibility_km %> km</dd></div>
+        <% end %>
+        <% if @weather.sunrise %>
+          <div><dt>Sunrise</dt><dd><%= @weather.sunrise.strftime("%-I:%M %p") %></dd></div>
+          <div><dt>Sunset</dt><dd><%= @weather.sunset.strftime("%-I:%M %p") %></dd></div>
+        <% end %>
+      </dl>
+    </article>
+  <% else %>
+    <%= render "layouts/partials/flash_alert" %>
+  <% end %>
+</section>

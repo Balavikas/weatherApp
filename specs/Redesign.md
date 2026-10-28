@@ -1,0 +1,2 @@
+-- This is a weather app, change the search bar styling, When users types any city names on the search bar, they should get the suggestions and able to click the city from the suggestions
+-- When displaying the weather of the particular city the display design is not good, change the design and fonts
