@@ -12,23 +12,32 @@ class CitySuggestionService
     def call
         return [] if @query.length < MIN_QUERY_LENGTH
 
-        # Failures return nil, which skip_nil keeps out of the cache so they're retried.
-        suggestions = Rails.cache.fetch(["city_suggestions", @query.downcase], expires_in: 1.day, skip_nil: true) do
-          response = Net::HTTP.get_response(uri)
-          unless response.is_a?(Net::HTTPSuccess)
-            Rails.logger.warn("CitySuggestionService: OpenWeatherMap returned #{response.code}: #{response.body}")
-            next nil
-          end
-
-          JSON.parse(response.body).map { |city| format(city) }.uniq { |city| city[:label] }
-        end
-        suggestions || []
+        cached { fetch_suggestions } || []
     rescue StandardError => e
         Rails.logger.error("CitySuggestionService failed: #{e.class}: #{e.message}")
         []
     end
 
     private
+
+    # Failures return nil, which skip_nil keeps out of the cache so they're retried.
+    # A broken cache (e.g. Solid Cache tables missing in production) must not break suggestions.
+    def cached(&block)
+        Rails.cache.fetch(["city_suggestions", @query.downcase], expires_in: 1.day, skip_nil: true, &block)
+    rescue ActiveRecord::ActiveRecordError => e
+        Rails.logger.warn("CitySuggestionService: cache unavailable (#{e.class}: #{e.message}), fetching uncached")
+        yield
+    end
+
+    def fetch_suggestions
+        response = Net::HTTP.get_response(uri)
+        unless response.is_a?(Net::HTTPSuccess)
+          Rails.logger.warn("CitySuggestionService: OpenWeatherMap returned #{response.code}: #{response.body}")
+          return nil
+        end
+
+        JSON.parse(response.body).map { |city| format(city) }.uniq { |city| city[:label] }
+    end
 
     def uri
         uri = URI(BASE_URL)
